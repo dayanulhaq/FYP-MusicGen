@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Footer from '@/components/ui/Footer';
 import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import { PropsWithChildren, Suspense } from 'react';
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en">
-      <body className="bg-black">
+      <body className="">
         <Navbar />
         <main
           id="skip"
@@ -30,7 +29,6 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         >
           {children}
         </main>
-        <Footer />
         <Suspense>
           <Toaster />
         </Suspense>

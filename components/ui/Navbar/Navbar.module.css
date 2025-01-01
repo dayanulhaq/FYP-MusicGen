@@ -1,13 +1,13 @@
 .root {
-  @apply sticky top-0 bg-black z-40 transition-all duration-150 h-16 md:h-20;
+  @apply fixed top-0 w-full z-40 transition-all duration-150 h-16 md:h-20 bg-transparent;
 }
 
 .link {
-  @apply inline-flex items-center leading-6 font-medium transition ease-in-out duration-75 cursor-pointer text-zinc-200 rounded-md p-1;
+  @apply inline-flex items-center leading-6 font-medium transition ease-in-out duration-75 cursor-pointer text-zinc-200 rounded-md p-1 hover:scale-105;
 }
 
 .link:hover {
-  @apply text-zinc-100;
+  @apply text-white;
 }
 
 .link:focus {
@@ -15,5 +15,9 @@
 }
 
 .logo {
-  @apply cursor-pointer rounded-full transform duration-100 ease-in-out;
+  @apply cursor-pointer rounded-full transform duration-100 ease-in-out hover:scale-110;
+}
+
+.nav_container {
+  @apply flex items-center justify-end max-w-7xl mx-auto px-6 h-full gap-4;
 }

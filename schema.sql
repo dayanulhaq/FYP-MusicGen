@@ -143,3 +143,61 @@ create policy "Can only view own subs data." on subscriptions for select using (
  */
 drop publication if exists supabase_realtime;
 create publication supabase_realtime for table products, prices;
+
+/** 
+* MUSICNFT
+* Note: Stores information about music NFTs created on the platform
+*/
+create table musicnft (
+  id uuid primary key default uuid_generate_v4(),
+  title text not null,
+  token_id text unique not null,
+  creator uuid references auth.users not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()),
+  metadata jsonb,
+  status text
+);
+alter table musicnft enable row level security;
+create policy "Users can view all music NFTs" on musicnft for select using (true);
+create policy "Users can create their own music NFTs" on musicnft for insert with check (auth.uid() = creator);
+
+/**
+* TRANSACTIONS
+* Note: Records all NFT transactions
+*/
+create table transactions (
+  id uuid primary key default uuid_generate_v4(),
+  transaction_id text unique not null,
+  nft_id uuid references musicnft not null,
+  seller_id uuid references auth.users not null,
+  buyer_id uuid references auth.users not null,
+  amount decimal not null,
+  timestamp timestamp with time zone default timezone('utc'::text, now()),
+  status text
+);
+alter table transactions enable row level security;
+create policy "Users can view their transactions" on transactions 
+  for select using (auth.uid() = seller_id or auth.uid() = buyer_id);
+
+/**
+* ROYALTIES
+* Note: Manages royalty distributions for NFT sales
+*/
+create table royalties (
+  id uuid primary key default uuid_generate_v4(),
+  nft_id uuid references musicnft not null,
+  recipient_id uuid references auth.users not null,
+  percentage decimal not null check (percentage >= 0 and percentage <= 100),
+  transaction_id uuid references transactions,
+  amount decimal not null,
+  paid_at timestamp with time zone
+);
+alter table royalties enable row level security;
+create policy "Users can view their royalties" on royalties 
+  for select using (auth.uid() = recipient_id);
+
+-- Add indexes for better query performance
+create index idx_musicnft_creator on musicnft(creator);
+create index idx_transactions_nft on transactions(nft_id);
+create index idx_royalties_nft on royalties(nft_id);
+create index idx_royalties_recipient on royalties(recipient_id);
