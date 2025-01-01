@@ -90,7 +90,7 @@ export default function AiGeneratedSong() {
 
         <div className="mt-12 pt-8 border-t border-zinc-800">
           <div className="text-center">
-            <p className="text-zinc-400 mb-4">Want to try something different?</p>
+            <p className="text-zinc-400 mb-4">Want to generate music instead?</p>
             <Link
               href="/music-generation"
               className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 
