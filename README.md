@@ -262,4 +262,5 @@ To verify you are running in production mode, test checking out with the [Stripe
  #   F Y P - M u s i c G e n  
  #   F Y P - M u s i c G e n  
  #   F Y P - M u s i c G e n  
+ #   f y p m u s i c  
  
