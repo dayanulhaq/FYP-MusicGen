@@ -25,7 +25,7 @@ export default function AfterSign() {
     }
 
     getUser();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (

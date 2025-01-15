@@ -245,11 +245,15 @@ export default function MusicGeneration() {
       const musicArrayBuffer = await musicResponse.arrayBuffer();
       const musicBuffer = await audioContext.decodeAudioData(musicArrayBuffer);
 
-      // Create an offline context for mixing
+      // Get the longest duration and use original sample rate
+      const duration = Math.max(voiceBuffer.duration, musicBuffer.duration);
+      const sampleRate = voiceBuffer.sampleRate; // Use original sample rate
+
+      // Create an offline context matching the original sample rate
       const offlineContext = new OfflineAudioContext(
-        2,
-        audioContext.sampleRate * Math.max(voiceBuffer.duration, musicBuffer.duration),
-        audioContext.sampleRate
+        2, // stereo
+        Math.ceil(sampleRate * duration),
+        sampleRate
       );
 
       // Create sources and gain nodes
@@ -257,6 +261,10 @@ export default function MusicGeneration() {
       const musicSource = offlineContext.createBufferSource();
       const voiceGain = offlineContext.createGain();
       const musicGain = offlineContext.createGain();
+
+      // Ensure playback rate is 1
+      voiceSource.playbackRate.value = 1;
+      musicSource.playbackRate.value = 1;
 
       // Set buffers
       voiceSource.buffer = voiceBuffer;
@@ -270,15 +278,15 @@ export default function MusicGeneration() {
       voiceSource.connect(voiceGain).connect(offlineContext.destination);
       musicSource.connect(musicGain).connect(offlineContext.destination);
 
-      // Start both sources
+      // Start both sources at time 0
       voiceSource.start(0);
       musicSource.start(0);
 
       // Render the mixed audio
       const renderedBuffer = await offlineContext.startRendering();
 
-      // Convert AudioBuffer to WAV Blob
-      const wavBlob = await audioBufferToWav(renderedBuffer);
+      // Convert to WAV maintaining original timing
+      const wavBlob = await audioBufferToWav(renderedBuffer, sampleRate);
       setCombinedAudioBlob(wavBlob);
 
       // Create URL and trigger download
@@ -299,23 +307,23 @@ export default function MusicGeneration() {
     }
   };
 
-  // Helper function to convert AudioBuffer to WAV
-  const audioBufferToWav = (buffer: AudioBuffer): Promise<Blob> => {
+  // Updated audioBufferToWav function with proper timing
+  const audioBufferToWav = (buffer: AudioBuffer, sampleRate: number): Promise<Blob> => {
     const numChannels = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
     const format = 1; // PCM
     const bitDepth = 16;
     
     const bytesPerSample = bitDepth / 8;
     const blockAlign = numChannels * bytesPerSample;
     
-    const dataLength = buffer.length * blockAlign;
+    // Calculate data length based on original duration
+    const dataLength = Math.ceil(buffer.length * blockAlign);
     const bufferLength = 44 + dataLength;
     
     const arrayBuffer = new ArrayBuffer(bufferLength);
     const view = new DataView(arrayBuffer);
     
-    // WAV header
+    // WAV header with original sample rate
     const writeString = (offset: number, string: string) => {
       for (let i = 0; i < string.length; i++) {
         view.setUint8(offset + i, string.charCodeAt(i));
@@ -326,31 +334,34 @@ export default function MusicGeneration() {
     view.setUint32(4, 36 + dataLength, true);
     writeString(8, 'WAVE');
     writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
+    view.setUint32(16, 16, true); // PCM chunk size
     view.setUint16(20, format, true);
     view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint32(24, sampleRate, true); // Original sample rate
+    view.setUint32(28, sampleRate * blockAlign, true); // Byte rate
     view.setUint16(32, blockAlign, true);
     view.setUint16(34, bitDepth, true);
     writeString(36, 'data');
     view.setUint32(40, dataLength, true);
     
-    // Write audio data
+    // Write audio data preserving original timing
     const offset = 44;
-    const channelData = new Float32Array(buffer.length);
     let index = 0;
     
-    for (let i = 0; i < buffer.numberOfChannels; i++) {
-      buffer.copyFromChannel(channelData, i, 0);
-      for (let j = 0; j < channelData.length; j++) {
-        const sample = Math.max(-1, Math.min(1, channelData[j]));
-        view.setInt16(offset + index, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+    // Interleave channels properly
+    const length = buffer.length;
+    for (let i = 0; i < length; i++) {
+      for (let channel = 0; channel < numChannels; channel++) {
+        const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+        const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+        view.setInt16(offset + index, value, true);
         index += bytesPerSample;
       }
     }
     
-    return Promise.resolve(new Blob([arrayBuffer], { type: 'audio/wav' }));
+    return Promise.resolve(new Blob([arrayBuffer], { 
+      type: 'audio/wav' 
+    }));
   };
 
   return (
