@@ -257,15 +257,26 @@ To run the project in live mode and process payments with Stripe, switch Stripe 
 Afterward, you will need to rebuild your production deployment for the changes to take effect. Within your project Dashboard, navigate to the "Deployments" tab, select the most recent deployment, click the overflow menu button (next to the "Visit" button) and select "Redeploy" (do NOT enable the "Use existing Build Cache" option).
 
 To verify you are running in production mode, test checking out with the [Stripe test card](https://stripe.com/docs/testing). The test card should not work.
-#   F Y P - M u s i c G e n  
- #   F Y P - M u s i c G e n  
- #   F Y P - M u s i c G e n  
- #   F Y P - M u s i c G e n  
- #   F Y P - M u s i c G e n  
- #   f y p m u s i c  
- #   f y p m u s i c  
- #   F Y P - M u s i c G e n  
- #   f y p m u s i c  
- #   f y p m u s i c  
- #   f y p m u s i c  
+#   F Y P - M u s i c G e n 
+ 
+ #   F Y P - M u s i c G e n 
+ 
+ #   F Y P - M u s i c G e n 
+ 
+ #   F Y P - M u s i c G e n 
+ 
+ #   F Y P - M u s i c G e n 
+ 
+ #   f y p m u s i c 
+ 
+ #   f y p m u s i c 
+ 
+ #   F Y P - M u s i c G e n 
+ 
+ #   f y p m u s i c 
+ 
+ #   f y p m u s i c 
+ 
+ #   f y p m u s i c 
+ 
  
